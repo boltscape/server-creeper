@@ -7,7 +7,7 @@ import requests
 import os
 from time import sleep
 
-TOKEN = 'NzUzNDkyODMzMTY3NDc0Njk5.X1m-4g.wxF3JyjX2VRSnyvUsiRHf0bxV18'
+TOKEN = OS.ENVIRON['BOT_TOKEN']
 BOT_PREFIX = ('!')
 client = Bot(command_prefix=BOT_PREFIX)
 
@@ -57,7 +57,7 @@ async def serverstatus(ctx):
 
 @client.command(name="hi", description="Say hi!", brief="Hi!", pass_context=True)
 async def thanks(ctx):
-    await ctx.send("Yi, " + ctx.author.mention + " :smile:")
+    await ctx.send("Hi, " + ctx.author.mention + " :smile:")
 
 @client.command(name="thanks", description="Your way to thank the creeper xD", brief="Give thanks", pass_context=True)
 async def thanks(ctx):
