@@ -7,13 +7,13 @@ import requests
 import os
 from time import sleep
 
-
+TOKEN = 'NzUzNDkyODMzMTY3NDc0Njk5.X1m-4g.wxF3JyjX2VRSnyvUsiRHf0bxV18'
 BOT_PREFIX = ('!')
 client = Bot(command_prefix=BOT_PREFIX)
 
 credentials = service_account.Credentials.from_service_account_file('creds.json')
 
-service = discovery.build('compute', 'v1')
+service = discovery.build('compute', 'v1', credentials=credentials)
 project = 'feisty-ceiling-285406' 
 zone = 'asia-southeast1-b'  
 instance = 'mc-server'
@@ -54,6 +54,10 @@ async def serverstatus(ctx):
         await ctx.send("Hmmmm. The ssserver is ssstopping right now, "+ ctx.author.mention)
     elif response['status'] == 'TERMINATED':
         await ctx.send("Ssserver is off, " + ctx.author.mention)
+
+@client.command(name="hi", description="Say hi!", brief="Hi!", pass_context=True)
+async def thanks(ctx):
+    await ctx.send("Yi, " + ctx.author.mention + " :smile:")
 
 @client.command(name="thanks", description="Your way to thank the creeper xD", brief="Give thanks", pass_context=True)
 async def thanks(ctx):
