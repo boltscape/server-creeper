@@ -6,21 +6,21 @@ from discord import Game
 import os
 from time import sleep
 
-bot_token = "NzUzNDkyODMzMTY3NDc0Njk5.X1m-4g.Ky23rD-p5mCSpTExqI3tDDLnsog" #Enter your Discord bot token here
-serveraddress = "35.247.171.131:25565" #Enter your server (Google Compute instance) IP address here
+bot_token = "" #Enter your Discord bot token here
+serveraddress = "" #Enter your server (Google Compute instance) IP address here
 
 #Setting the command prefix for the bot and creating a bot object
 BOT_PREFIX = ('!')
 client = Bot(command_prefix=BOT_PREFIX)
 
-#Generating credentials object from JSON file
-credentials = service_account.Credentials.from_service_account_file("/home/server-creeper/creds.json")
+#Generating credentials object from the creds JSON file in the same directory as the main.py file
+credentials = service_account.Credentials.from_service_account_file("creds.json")
 
 #Building an object for the Compute instance
 service = discovery.build('compute', 'v1', credentials=credentials)
-project = 'feisty-ceiling-285406' #Your Google Cloud project ID
-zone = 'asia-southeast1-b'  #The zone that your VM is in
-instance = 'mc-server' #Your VM's name
+project = '' #Your Google Cloud project ID
+zone = ''  #The zone that your VM is in
+instance = '' #Your VM's name
 
 #Function definitions start here
 
@@ -70,8 +70,7 @@ async def restartserver(ctx):
     sleep(30)
     request = service.instances().start(project=project, zone=zone, instance=instance)
     response = request.execute()
-    if response.status == 'RUNNING':
-        await ctx.send("Ssserver ressstarting, "+ ctx.author.mention + ", hold on!")
+    await ctx.send("Ssserver ressstarting, "+ ctx.author.mention + ", hold on!")
    
 @client.command(name="status", description="Check if server is running", brief="Check if server is running", pass_context=True)
 async def serverstatus(ctx):
