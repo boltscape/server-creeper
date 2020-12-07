@@ -3,29 +3,38 @@ from googleapiclient import discovery
 from google.oauth2 import service_account
 
 from discord import Game
+import os
 from time import sleep
 
-bot_token = '' #Enter your Discord bot token here
-serveraddress = '' #Enter your server (Google Compute instance) IP address here
+bot_token = "NzUzNDkyODMzMTY3NDc0Njk5.X1m-4g.Ky23rD-p5mCSpTExqI3tDDLnsog" #Enter your Discord bot token here
+serveraddress = "35.247.171.131:25565" #Enter your server (Google Compute instance) IP address here
 
 #Setting the command prefix for the bot and creating a bot object
 BOT_PREFIX = ('!')
 client = Bot(command_prefix=BOT_PREFIX)
 
 #Generating credentials object from JSON file
-credentials = service_account.Credentials.from_service_account_file('creds.json')
+credentials = service_account.Credentials.from_service_account_file("/home/server-creeper/creds.json")
 
 #Building an object for the Compute instance
 service = discovery.build('compute', 'v1', credentials=credentials)
-project = '' #Your Google Cloud project ID
-zone = ''  #The zone that your VM is in
-instance = '' #Your VM's name
+project = 'feisty-ceiling-285406' #Your Google Cloud project ID
+zone = 'asia-southeast1-b'  #The zone that your VM is in
+instance = 'mc-server' #Your VM's name
 
 #Function definitions start here
 
 #The 5 core functions: start, stop, restart, status, and address. Pretty self-explainatory.
 @client.command(name="start", description="Starts the Minecraft server", brief="Starts server", pass_context=True)
 async def startserver(ctx):
+    request = service.instances().get(project=project, zone=zone, instance=instance)
+    response = request.execute()
+    if response['status'] == 'PROVISIONING' or response['status'] == 'STAGING':
+        await ctx.send("Ssserver is already ssstarting, "+ ctx.author.mention + ", wait up!")
+        return
+    elif response['status'] == 'RUNNING':
+        await ctx.send("Ssserver isss already on, "+ ctx.author.mention + "! Get in there!")
+        return
     request = service.instances().start(project=project, zone=zone, instance=instance)
     response = request.execute()
     if response['status'] == 'RUNNING':
@@ -33,6 +42,14 @@ async def startserver(ctx):
 
 @client.command(name="stop", description="Stops the Minecraft server", brief="Stops server", pass_context=True)
 async def stopserver(ctx):
+    request = service.instances().get(project=project, zone=zone, instance=instance)
+    response = request.execute()
+    if response['status'] == 'STOPPING':
+        await ctx.send("Hmmmm. The ssserver is already ssstopping, "+ ctx.author.mention)
+        return
+    elif response['status'] == 'TERMINATED':
+        await ctx.send("Hmmmm. The ssserver is already off, "+ ctx.author.mention)
+        return
     request = service.instances().stop(project=project, zone=zone, instance=instance)
     response = request.execute()
     if response['status'] == 'RUNNING':
@@ -40,6 +57,14 @@ async def stopserver(ctx):
 
 @client.command(name="restart", description="Restart the Minecraft server", brief="Restart server", pass_context=True)
 async def restartserver(ctx):
+    request = service.instances().get(project=project, zone=zone, instance=instance)
+    response = request.execute()
+    if response['status'] == 'STOPPING':
+        await ctx.send("Hmmmm. The ssserver is ssstopping, "+ ctx.author.mention + " I cannot restart it yet.")
+        return
+    elif response['status'] == 'TERMINATED':
+        await ctx.send("Hmmmm. The ssserver is off, "+ ctx.author.mention)
+        return
     request = service.instances().stop(project=project, zone=zone, instance=instance)
     response = request.execute()
     sleep(30)
