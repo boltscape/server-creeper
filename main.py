@@ -3,7 +3,6 @@ from googleapiclient import discovery
 from google.oauth2 import service_account
 
 from discord import Game
-import os
 from time import sleep
 
 bot_token = "" #Enter your Discord bot token here
