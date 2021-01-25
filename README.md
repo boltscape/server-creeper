@@ -5,6 +5,6 @@ Before you start, you will need 4 things:
 1) A functioning Google Cloud Compute instance with your server on it, configured to start the server upon starting the VM. (See https://cloud.google.com/solutions/gaming/minecraft-server)
 2) A JSON file named creds.json containing the credentials of a service account with permissions to operate on your VM. (See https://cloud.google.com/docs/authentication/production#create_service_account)
 3) A bot token from Discord for your Discord bot.
-4) Some place to host this code (Personally, I use Heroku because I'm stingy with my free Google Cloud credits).
+4) Some place to host this code (Personally, I use Repl.it because I'm stingy with my free Google Cloud credits).
 
 Once you have these, simply fill in the bot_token, project, zone, and instance variables in main.py, and run the bot. 

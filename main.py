@@ -1,25 +1,37 @@
 from discord.ext.commands import Bot
+from discord import Game
+
 from googleapiclient import discovery
 from google.oauth2 import service_account
 
-from discord import Game
-from time import sleep
+from keepalive import keep_alive
 
-bot_token = "" #Enter your Discord bot token here
-serveraddress = "" #Enter your server (Google Compute instance) IP address here
+from cryptography.fernet import Fernet
+import os
+import ast
+
+bot_token = os.getenv("TOKEN") #Discord bot token here
+serveraddress = os.getenv("ADDRESS") #Server (Google Compute instance) IP address here
 
 #Setting the command prefix for the bot and creating a bot object
 BOT_PREFIX = ('!')
 client = Bot(command_prefix=BOT_PREFIX)
 
-#Generating credentials object from the creds JSON file in the same directory as the main.py file
-credentials = service_account.Credentials.from_service_account_file("creds.json")
+#Generating credentials object from the encrypted JSON file
+hkey = (hex(int(os.environ["CREDS_KEY"]))).lstrip('0x')
+bkey = bytes.fromhex(hkey)
+fernet = Fernet(bkey)
+with open('encreds.json', 'rb') as enfile:
+  encreds = enfile.read()
+creds = fernet.decrypt(encreds)
+dcreds = ast.literal_eval(creds.decode("utf-8"))
+credentials = service_account.Credentials.from_service_account_info(dcreds)
 
 #Building an object for the Compute instance
 service = discovery.build('compute', 'v1', credentials=credentials)
-project = '' #Your Google Cloud project ID
-zone = ''  #The zone that your VM is in
-instance = '' #Your VM's name
+project = 'minecraft-298108' #Your Google Cloud project ID
+zone = 'asia-southeast1-b'  #The zone that your VM is in
+instance = 'mc-server' #Your VM's name
 
 #Function definitions start here
 
@@ -66,7 +78,6 @@ async def restartserver(ctx):
         return
     request = service.instances().stop(project=project, zone=zone, instance=instance)
     response = request.execute()
-    sleep(30)
     request = service.instances().start(project=project, zone=zone, instance=instance)
     response = request.execute()
     await ctx.send("Ssserver ressstarting, "+ ctx.author.mention + ", hold on!")
@@ -90,7 +101,7 @@ async def address(ctx):
     await ctx.send("Hey "+ ctx.author.mention + ", use " + serveraddress + " to connect to the server!")
 
 @client.command(name="hi", description="Say hi!", brief="Hi!", pass_context=True)
-async def thanks(ctx):
+async def hi(ctx):
     await ctx.send("Hi, " + ctx.author.mention + " :smile:")
 
 @client.command(name="thanks", description="Your way to thank the creeper xD", brief="Give thanks", pass_context=True)
@@ -102,5 +113,6 @@ async def thanks(ctx):
 async def on_ready():
     await client.change_presence(activity=Game(name="Minecraft"))
 
-#Run the bot
+#Run the bot and the keep-alive service
+keep_alive()
 client.run(bot_token)
