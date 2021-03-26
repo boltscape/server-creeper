@@ -1,6 +1,8 @@
 from discord.ext.commands import Bot
 from discord import Game
 
+from mcstatus import MinecraftServer
+
 from googleapiclient import discovery
 from google.oauth2 import service_account
 
@@ -11,14 +13,13 @@ import os
 import ast
 
 bot_token = os.getenv("TOKEN") #Discord bot token here
-serveraddress = os.getenv("ADDRESS") #Server (Google Compute instance) IP address here
-
+serveraddress = os.getenv("ADDRESS") #Get server address
 #Setting the command prefix for the bot and creating a bot object
 BOT_PREFIX = ('!')
 client = Bot(command_prefix=BOT_PREFIX)
 
 #Generating credentials object from the encrypted JSON file
-hkey = (hex(int(os.environ["CREDS_KEY"]))).lstrip('0x')
+hkey = (hex(int(os.environ["KEY"]))).lstrip('0x')
 bkey = bytes.fromhex(hkey)
 fernet = Fernet(bkey)
 with open('encreds.json', 'rb') as enfile:
@@ -35,7 +36,7 @@ instance = 'mc-server' #Your VM's name
 
 #Function definitions start here
 
-#The 5 core functions: start, stop, restart, status, and address. Pretty self-explainatory.
+#The 6 core functions: start, stop, restart, status, address, and plist. Pretty self-explainatory.
 @client.command(name="start", description="Starts the Minecraft server", brief="Starts server", pass_context=True)
 async def startserver(ctx):
     request = service.instances().get(project=project, zone=zone, instance=instance)
@@ -95,16 +96,31 @@ async def serverstatus(ctx):
     elif response['status'] == 'TERMINATED':
         await ctx.send("Ssserver is off, " + ctx.author.mention)
 
+@client.command(name="plist", description="Get list of players online", brief="Player list", pass_context=True)
+async def plist(ctx):
+  try:
+    server = MinecraftServer.lookup(serveraddress)
+    status = server.status()
+    if status.players.sample:
+      player_list = [p.name for p in status.players.sample]
+      await ctx.send("Online playersss: \n")
+      for i in range(1, len(player_list)+1):
+        await ctx.send(f"{i}. {player_list[i-1]}")
+    else:
+      await ctx.send("No playersss online, " + ctx.author.mention)
+  except:
+    await ctx.send("The ssserver is offline, " + ctx.author.mention)
+
 #Some whimsical commands I wrote for my friends
-@client.command(description="Show the server address", brief="Show server address", pass_context=True)
+@client.command(description="Show the server address", brief="Server address", pass_context=True)
 async def address(ctx):
-    await ctx.send("Hey "+ ctx.author.mention + ", use " + serveraddress + " to connect to the server!")
+  await ctx.send("Hey "+ ctx.author.mention + ", use " + serveraddress + " to connect to the server!")
 
 @client.command(name="hi", description="Say hi!", brief="Hi!", pass_context=True)
 async def hi(ctx):
-    await ctx.send("Hi, " + ctx.author.mention + " :smile:")
+  await ctx.send("Hi, " + ctx.author.mention + " :smile:")
 
-@client.command(name="thanks", description="Your way to thank the creeper xD", brief="Give thanks", pass_context=True)
+@client.command(name="thanks", description="Your way to thank the creeper xD", brief="Thanks", pass_context=True)
 async def thanks(ctx):
     await ctx.send("You're welcome, " + ctx.author.mention + " :smile:")
     
